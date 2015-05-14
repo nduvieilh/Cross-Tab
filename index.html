@@ -49,19 +49,17 @@ $(document).on('ready', function() {
 
 
     $(document).on('mousedown', '#button1, #button2, #button3, #button4', function() {
+        var $this = $(this);
         var start = performance.now();
         var interval = setInterval(function() {
             var time = performance.now() - start;
-            crossTab.CrossTab("write", "Button "+$(this).attr('id').replace('button', '')+" was held for "+time/1000+" seconds");
-        }, 100);
+            if(time > 1000) {
+                crossTab.CrossTab("write", "Button "+$this.attr('id').replace('button', '')+" was held for "+time/1000+" seconds");
+            }
+        }, 1);
         $(document).one('mouseup', '#button1, #button2, #button3, #button4', function(e) {
 
             clearInterval(interval);
-            var time = performance.now() - start;
-            if(time > 1000) {
-                crossTab.CrossTab("write", "Button "+$(this).attr('id').replace('button', '')+" was held for "+time/1000+" seconds");
-                e.stopPropagation();
-            }
 
         });
     });

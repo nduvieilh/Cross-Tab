@@ -20,7 +20,19 @@
 		uid: guid(),
 		prefix: 'crosstab',
 		storageCallback: function(data) {
-			console.log("Storage Event Fired", data);
+			if(this.debug !== 'undefined') {
+				console.log("Storage Event Fired", data);
+			}
+		},
+		openCallback: function(id, selector) {
+			if(this.debug !== 'undefined') {
+				console.log("A new tab has joined id: "+selector+" with id: "+id);
+			}
+		},
+		garbageCollectCallback: function() {
+			if(this.debug !== 'undefined') {
+				console.log("Storage Garbage Collected");
+			}
 		}
 	};
 
@@ -30,9 +42,12 @@
 // Public methods
 	var methods = {
 	init: function(options) {
+		var _this = this;
         var $this = $(this);
         var defaults = defaultSettings;
         settings = $.extend({}, defaults, options);
+
+        this.CrossTab('open');
 
         $(window).bind('storage', function (e) {
         	var data = e.originalEvent.newValue;
@@ -44,14 +59,22 @@
 
 		return $this;
 	},
+	open: function() {
+		localStorage.setItem(settings.prefix+'-windows', 'work on this');
+		settings.openCallback();
+	},
+	close: function() {
+
+	},
 	write: function(value) {
-		localStorage.setItem(settings.prefix+'-'+guid(), value);
+		value = JSON.stringify(value);
+		localStorage.setItem(settings.prefix+'-z'+guid(), value);
 	},
 	read: function() {
 
 	},
 	garbageCollect: function() {
-
+		settings.garbageCollectCallback();
 	},
 	getSettings: function() {
 		if(settings.debug) {
