@@ -1,0 +1,9 @@
+{
+	"name": "cross-tab",
+	"description": "A cross tab communication library",
+	"version": "0.0.1",
+	"private": true,
+	"dependencies": {
+		"express": "4.12.x"
+	}
+}

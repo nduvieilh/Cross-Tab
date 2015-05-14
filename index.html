@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+
+        <title>Cross Tab</title>
+
+        <link rel="stylesheet" href="style.css" type="text/css">
+
+        <script src="//code.jquery.com/jquery-2.1.4.min.js"></script>
+        <script src="crosstab.js"></script>
+    </head>
+    <body>
+        <h1>Tab ID: <span id="tab-id"></span></h1>
+        <h2>Selector: <span id="tab-selector"></span></h2>
+
+        <button id="button1">Button 1</button>
+        <button id="button2">Button 2</button>
+        <button id="button3">Button 3</button>
+        <button id="button4">Button 4</button>
+    </body>
+</html>
+<script>
+$(document).on('ready', function() {
+
+    var settings = {
+        debug: true,
+        selector: 'window-one'
+    };
+
+    window.crossTab = $(document).CrossTab(settings);
+
+    var settings = crossTab.CrossTab('getSettings');
+
+    $('#tab-id').text(settings.uid);
+    $('#tab-selector').text(settings.selector);
+
+    $(document).on('click', '#button1, #button2, #button3, #button4', function() {
+        crossTab.CrossTab("write", "Button "+$(this).attr('id').replace('button', '')+" was pressed");
+    });
+
+    var start = performance.now();
+    setInterval(function() {
+        var time = performance.now() - start;
+        crossTab.CrossTab("write", Math.floor(time/1000));
+    }, 1000);
+
+
+    $(document).on('mousedown', '#button1, #button2, #button3, #button4', function() {
+        var start = performance.now();
+        var interval = setInterval(function() {
+            var time = performance.now() - start;
+            crossTab.CrossTab("write", "Button "+$(this).attr('id').replace('button', '')+" was held for "+time/1000+" seconds");
+        }, 100);
+        $(document).one('mouseup', '#button1, #button2, #button3, #button4', function(e) {
+
+            clearInterval(interval);
+            var time = performance.now() - start;
+            if(time > 1000) {
+                crossTab.CrossTab("write", "Button "+$(this).attr('id').replace('button', '')+" was held for "+time/1000+" seconds");
+                e.stopPropagation();
+            }
+
+        });
+    });
+
+});
+</script>
