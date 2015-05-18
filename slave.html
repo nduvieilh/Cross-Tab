@@ -15,7 +15,18 @@
     <body>
         <h1>Tab ID: <span id="tab-id"></span></h1>
         <h2>Selector: <span id="tab-selector"></span></h2>
-        <div id="results"></div>
+        <table>
+            <thead>
+                <tr>
+                    <th>Type</th>
+                    <th>Kind</th>
+                    <th>Value</th>
+                    <th>Response Time (ms)</th>
+                </tr>
+            </thead>
+            <tbody id="results">
+            </tbody>
+        </table>
     </body>
 </html>
 <script>
@@ -24,8 +35,10 @@ $(document).on('ready', function() {
     var settings = {
         debug: true,
         selector: 'window-two',
-        storageCallback: function(data) {
-            $('#results').prepend('<p>'+data+'</p>');
+        storageCallback: function(data, kind, key, e) {
+            if(kind !== 'delete') {
+                $('#results').prepend('<tr><td>'+data.type+'</td><td>'+kind+'</td><td>'+data.value+'</td><td>'+data.responseTime+'</td></tr>');
+            }
             console.log(data);
         }
     };

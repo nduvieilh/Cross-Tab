@@ -38,13 +38,13 @@ $(document).on('ready', function() {
     $('#tab-selector').text(settings.selector);
 
     $(document).on('click', '#button1, #button2, #button3, #button4', function() {
-        crossTab.CrossTab("write", "Button "+$(this).attr('id').replace('button', '')+" was pressed");
+        crossTab.CrossTab("write", "Button "+$(this).attr('id').replace('button', '')+" was pressed", "buttonClick");
     });
 
     var start = performance.now();
     setInterval(function() {
         var time = performance.now() - start;
-        crossTab.CrossTab("write", Math.floor(time/1000));
+        crossTab.CrossTab("write", Math.floor(time/1000), "timer");
     }, 10000);
 
 
@@ -54,7 +54,7 @@ $(document).on('ready', function() {
         var interval = setInterval(function() {
             var time = performance.now() - start;
             if(time > 1000) {
-                crossTab.CrossTab("write", "Button "+$this.attr('id').replace('button', '')+" was held for "+time/1000+" seconds");
+                crossTab.CrossTab("write", "Button "+$this.attr('id').replace('button', '')+" was held for "+time/1000+" seconds", "buttonHold");
             }
         }, 1);
         $(document).one('mouseup', '#button1, #button2, #button3, #button4', function(e) {

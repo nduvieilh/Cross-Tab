@@ -18,11 +18,12 @@
 	var defaultSettings = {
 		debug: false,
 		clear: true,
+		clearEvent: true,
 		uid: guid(),
 		prefix: 'crosstab',
-		storageCallback: function(data) {
+		storageCallback: function(data, kind, key, e) {
 			if(this.debug !== 'undefined') {
-				console.log("Storage Event Fired", data);
+				console.log("Storage Event Fired.", kind, ": ", data);
 			}
 		},
 		openCallback: function(id, selector) {
@@ -33,6 +34,11 @@
 		garbageCollectCallback: function() {
 			if(this.debug !== 'undefined') {
 				console.log("Storage Garbage Collected");
+			}
+		},
+		clearCallback: function(removed) {
+			if(this.debug !== 'undefined') {
+				console.log("Storage cleared.  These items removed: ", removed);
 			}
 		}
 	};
@@ -51,8 +57,18 @@
         this.CrossTab('open');
 
         $(window).bind('storage', function (e) {
+        	var origEvent = e.originalEvent;
         	var data = e.originalEvent.newValue;
-    		settings.storageCallback(data);
+        	var key = e.originalEvent.key;
+        	var kind = 'update';
+        	if(origEvent.newValue !== null && origEvent.oldValue === null) {
+        		kind = 'new';
+        	} else if(origEvent.newValue === null && origEvent.oldValue !== null) {
+        		kind = 'delete';
+        		data = e.originalEvent.oldValue;
+        	}
+        	var processed = _this.CrossTab("readData", data);
+    		settings.storageCallback(processed, kind, key, e);
   		});
 
         console.log("Cross Tab Started");
@@ -62,25 +78,43 @@
 	},
 	open: function() {
 		var windowObject = localStorage[settings.prefix+'-windows'];
-		if(typeof windowObject !== 'undefined') {
+		if(typeof windowObject === 'object') {
 			JSON.parse(windowObject);
 			console.log('Window object found: ');
 		} else {
 			console.log('No window object found, must create a new one.');
+			if(settings.clear) {
+				this.CrossTab("clear");
+			}
+			var windowObject = {
+				started: new Date(),
+			}
 		}
-		//localStorage.setItem(settings.prefix+'-windows', 'work on this');
-		settings.openCallback(settings.id, settings.selector);
+		settings.openCallback(settings.uid, settings.selector);
 	},
 	close: function() {
 
 	},
-	write: function(value, to) {
+	write: function(value, type, to, key) {
+		var created = new Date();
+		var update = false;
+		if(typeof key !== 'undefined' && typeof localStorage[key] !== 'undefined') {
+			created = this.CrossTab.readKey(key).created;
+			update = true;
+		}
 		value = {
 			value: value,
 			from: {
 				id: settings.uid,
 				selector: settings.selector
-			}
+			},
+			created: created,
+			modified: created
+		}
+		if(typeof type !== 'undefined') {
+			value.type = type;
+		} else {
+			value.type = 'write';
 		}
 		if(typeof to !== 'undefined') {
 			value.to = {
@@ -88,13 +122,46 @@
 			}
 		}
 		value = JSON.stringify(value);
-		localStorage.setItem(settings.prefix+'-z'+guid(), value);
+		if(update) {
+			localStorage.setItem(key, value);
+		} else {
+			localStorage.setItem(settings.prefix+'-'+guid(), value);
+		}
 	},
-	read: function() {
-
+	readKey: function(key) {
+		var entry = {};
+		if(typeof localStorage[key] !== 'undefined') {
+			entry = localStorage[key];
+		} else {
+			console.log("Cannot find a entry with key: ", key);
+			return false;
+		}
+		return this.CrossTab("readData", entry);
+	},
+	readData: function(data) {
+		var processed = JSON.parse(data);
+		var now = new Date()
+		if(typeof processed.modified !== 'undefined') {
+			processed.responseTime = now - new Date(processed.modified);	
+		} else {
+			processed.responseTime = false;
+		}
+		return processed;
 	},
 	garbageCollect: function() {
 		settings.garbageCollectCallback();
+	},
+	clear: function() {
+		console.log("Clearing all values that start with: "+settings.prefix);
+		var all = Object.keys(localStorage);
+		var removed = [];
+		for(var i in all) {
+			if(all[i].indexOf(settings.prefix) > -1) {
+				removed.push(all[i]);
+				localStorage.removeItem(all[i]);
+			}
+		}
+		settings.clearCallback(removed);
 	},
 	getSettings: function() {
 		if(settings.debug) {

@@ -32,3 +32,32 @@ button:active {
 button:focus {
 	outline: 0px;
 }
+
+table {
+	margin: 25px auto;
+	width: 100%;
+	border-collapse: collapse;
+	border: 1px solid #eee;
+	border-bottom: 2px solid #279;
+}
+table tr:hover {
+	background: #f4f4f4;
+}
+table tr:hover td {
+ 	color: #555;
+}
+table th, table td {
+	color: #999;
+	border: 1px solid #eee;
+	padding: 15px;
+	border-collapse: collapse;
+}
+table th {
+	background: #279;
+	color: #fff;
+	text-transform: uppercase;
+	font-size: 12px;
+}
+table th.last {
+	border-right: none;
+}
