@@ -66,7 +66,19 @@
 	close: function() {
 
 	},
-	write: function(value) {
+	write: function(value, to) {
+		value = {
+			value: value,
+			from: {
+				id: settings.uid,
+				selector: settings.selector
+			}
+		}
+		if(typeof to !== 'undefined') {
+			value.to = {
+				selector: to
+			}
+		}
 		value = JSON.stringify(value);
 		localStorage.setItem(settings.prefix+'-z'+guid(), value);
 	},
