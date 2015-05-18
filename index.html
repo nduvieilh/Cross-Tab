@@ -45,7 +45,7 @@ $(document).on('ready', function() {
     setInterval(function() {
         var time = performance.now() - start;
         crossTab.CrossTab("write", Math.floor(time/1000));
-    }, 1000);
+    }, 10000);
 
 
     $(document).on('mousedown', '#button1, #button2, #button3, #button4', function() {

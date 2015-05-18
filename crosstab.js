@@ -17,6 +17,7 @@
 	// Default settings
 	var defaultSettings = {
 		debug: false,
+		clear: true,
 		uid: guid(),
 		prefix: 'crosstab',
 		storageCallback: function(data) {
@@ -60,8 +61,15 @@
 		return $this;
 	},
 	open: function() {
-		localStorage.setItem(settings.prefix+'-windows', 'work on this');
-		settings.openCallback();
+		var windowObject = localStorage[settings.prefix+'-windows'];
+		if(typeof windowObject !== 'undefined') {
+			JSON.parse(windowObject);
+			console.log('Window object found: ');
+		} else {
+			console.log('No window object found, must create a new one.');
+		}
+		//localStorage.setItem(settings.prefix+'-windows', 'work on this');
+		settings.openCallback(settings.id, settings.selector);
 	},
 	close: function() {
 
