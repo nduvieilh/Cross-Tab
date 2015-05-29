@@ -19,6 +19,7 @@
 		debug: false,
 		clear: true,
 		clearEvent: true,
+		checkOff: true,
 		uid: guid(),
 		prefix: 'crosstab',
 		storageCallback: function(data, kind, key, e) {
@@ -42,6 +43,8 @@
 			}
 		}
 	};
+
+	var counter = 0;
 
 	var settings = {};
 
@@ -68,7 +71,19 @@
         		data = e.originalEvent.oldValue;
         	}
         	var processed = _this.CrossTab("readData", data);
+        	if(settings.checkOff && typeof processed.checkOff !== 'undefined' && typeof processed.checkOff[settings.uid] === 'undefined') {
+        		processed.checkOff[settings.uid] = {
+        			id: settings.uid,
+        			selector: settings.selector,
+        			time: new Date()
+        		}
+        		console.log('update', processed);
+        		counter++;
+        		if((counter % 10) === 0)
+        			_this.CrossTab('write', processed, processed.type, undefined, key);
+        	} 
     		settings.storageCallback(processed, kind, key, e);
+    		
   		});
 
         console.log("Cross Tab Started");
@@ -96,13 +111,17 @@
 
 	},
 	write: function(value, type, to, key) {
+		var _this = this;
 		var created = new Date();
 		var update = false;
 		if(typeof key !== 'undefined' && typeof localStorage[key] !== 'undefined') {
-			created = this.CrossTab.readKey(key).created;
+			console.log("key", key);
+			console.log("data", _this.CrossTab('readKey', key));
+			created = _this.CrossTab('readKey', key).created;
 			update = true;
 		}
 		value = {
+			id: key,
 			value: value,
 			from: {
 				id: settings.uid,
@@ -110,6 +129,14 @@
 			},
 			created: created,
 			modified: created
+		}
+		if(settings.checkOff) {
+			value.checkOff = {};
+			value.checkOff[settings.uid] = {
+				id: settings.uid,
+				selector: settings.selector,
+				time: new Date()
+			};
 		}
 		if(typeof type !== 'undefined') {
 			value.type = type;

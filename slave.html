@@ -22,6 +22,7 @@
                     <th>Kind</th>
                     <th>Value</th>
                     <th>Response Time (ms)</th>
+                    <th>Check off</th>
                 </tr>
             </thead>
             <tbody id="results">
@@ -36,8 +37,31 @@ $(document).on('ready', function() {
         debug: true,
         selector: 'window-two',
         storageCallback: function(data, kind, key, e) {
-            if(kind !== 'delete') {
-                $('#results').prepend('<tr><td>'+data.type+'</td><td>'+kind+'</td><td>'+data.value+'</td><td>'+data.responseTime+'</td></tr>');
+            var checkOff = "";
+            for(var i in data.checkOff) {
+                id = data.checkOff[i].id;
+                id = id.substr(id.length - 6);
+                checkOff += id+'<br>';
+            }
+            switch(kind) {
+                case 'new':
+                    var string = '<tr id="'+key+'"><td>'+data.type+'</td><td>'+kind+'</td><td>'+data.value+'</td><td>'+data.responseTime+'</td>';
+                    if(settings.checkOff)
+                        string += '<td>'+checkOff+'</td>';
+                    string += '</div></tr>';
+                    $('#results').prepend(string);
+                    break;
+                case 'update':
+                    if(settings.checkOff) {
+                        $('#'+key+' > td:last').html(checkOff);
+                    }
+                    break;
+                case 'delete':
+                    $('#'+key).remove();
+                    break;
+                default:
+                    console.log("Could not determine type: "+kind);
+                    break;
             }
             console.log(data);
         }
