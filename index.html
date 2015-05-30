@@ -16,10 +16,10 @@
         <h1>Tab ID: <span id="tab-id"></span></h1>
         <h2>Selector: <span id="tab-selector"></span></h2>
 
-        <button id="button1">Button 1</button>
-        <button id="button2">Button 2</button>
-        <button id="button3">Button 3</button>
-        <button id="button4">Button 4</button>
+        <button id="button1">Press</button>
+        <button id="button2">Press & Hold</button>
+        <button id="button4">Update row</button>
+        <input id="text" />
     </body>
 </html>
 <script>
@@ -30,6 +30,8 @@ $(document).on('ready', function() {
         selector: 'window-one'
     };
 
+    var counter = 0;
+
     window.crossTab = $(document).CrossTab(settings);
 
     var settings = crossTab.CrossTab('getSettings');
@@ -37,18 +39,20 @@ $(document).on('ready', function() {
     $('#tab-id').text(settings.uid);
     $('#tab-selector').text(settings.selector);
 
-    $(document).on('click', '#button1, #button2, #button3, #button4', function() {
+    $(document).on('click', '#button1', function() {
         crossTab.CrossTab("write", "Button "+$(this).attr('id').replace('button', '')+" was pressed", "buttonClick");
     });
 
-    var start = performance.now();
-    setInterval(function() {
-        var time = performance.now() - start;
-        crossTab.CrossTab("write", Math.floor(time/1000), "timer");
-    }, 10000);
+    $(document).on('click', '#button4', function() {
+        counter++;
+        crossTab.CrossTab("write", "Button 4 was pressed "+counter+" times", "buttonClick", undefined, "btn4");
+    });
 
+    $(document).on('keyup', '#text', function() {
+        crossTab.CrossTab("write", $(this).val(), "textUpdate", undefined, "text");
+    });
 
-    $(document).on('mousedown', '#button1, #button2, #button3, #button4', function() {
+    $(document).on('mousedown', '#button2', function() {
         var $this = $(this);
         var start = performance.now();
         var interval = setInterval(function() {
@@ -57,7 +61,7 @@ $(document).on('ready', function() {
                 crossTab.CrossTab("write", "Button "+$this.attr('id').replace('button', '')+" was held for "+time/1000+" seconds", "buttonHold");
             }
         }, 1);
-        $(document).one('mouseup', '#button1, #button2, #button3, #button4', function(e) {
+        $(document).one('mouseup', '#button2', function(e) {
 
             clearInterval(interval);
 

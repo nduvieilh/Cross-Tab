@@ -19,7 +19,7 @@
 		debug: false,
 		clear: true,
 		clearEvent: true,
-		checkOff: true,
+		checkOff: false,
 		uid: guid(),
 		prefix: 'crosstab',
 		storageCallback: function(data, kind, key, e) {
@@ -39,12 +39,11 @@
 		},
 		clearCallback: function(removed) {
 			if(this.debug !== 'undefined') {
+				console.clear();
 				console.log("Storage cleared.  These items removed: ", removed);
 			}
 		}
 	};
-
-	var counter = 0;
 
 	var settings = {};
 
@@ -71,19 +70,14 @@
         		data = e.originalEvent.oldValue;
         	}
         	var processed = _this.CrossTab("readData", data);
+        	
         	if(settings.checkOff && typeof processed.checkOff !== 'undefined' && typeof processed.checkOff[settings.uid] === 'undefined') {
-        		processed.checkOff[settings.uid] = {
-        			id: settings.uid,
-        			selector: settings.selector,
-        			time: new Date()
-        		}
-        		console.log('update', processed);
-        		counter++;
-        		if((counter % 10) === 0)
-        			_this.CrossTab('write', processed, processed.type, undefined, key);
-        	} 
-    		settings.storageCallback(processed, kind, key, e);
-    		
+        		processed = _this.CrossTab('checkOff', key);
+        	}
+
+        	console.log("processed", processed);
+
+        	settings.storageCallback(processed, kind, key, e);
   		});
 
         console.log("Cross Tab Started");
@@ -115,10 +109,15 @@
 		var created = new Date();
 		var update = false;
 		if(typeof key !== 'undefined' && typeof localStorage[key] !== 'undefined') {
-			console.log("key", key);
-			console.log("data", _this.CrossTab('readKey', key));
 			created = _this.CrossTab('readKey', key).created;
 			update = true;
+		}
+		if(typeof key === 'undefined') {
+			key = settings.prefix+'-'+guid()
+		}
+		// Add prefix if none exists
+		if(key.indexOf(settings.prefix) !== 0) {
+			key = settings.prefix+'-'+key;
 		}
 		value = {
 			id: key,
@@ -131,7 +130,9 @@
 			modified: created
 		}
 		if(settings.checkOff) {
-			value.checkOff = {};
+			if(typeof value.checkOff === 'undefined') {
+				value.checkOff = {};
+			}
 			value.checkOff[settings.uid] = {
 				id: settings.uid,
 				selector: settings.selector,
@@ -149,10 +150,24 @@
 			}
 		}
 		value = JSON.stringify(value);
-		if(update) {
-			localStorage.setItem(key, value);
-		} else {
-			localStorage.setItem(settings.prefix+'-'+guid(), value);
+		localStorage.setItem(key, value);
+	},
+	checkOff: function(key) {
+		var _this = this;
+		if(settings.checkOff) {
+			var data = _this.CrossTab('readKey', key);
+
+			data.checkOff[settings.uid] = {
+    			id: settings.uid,
+    			selector: settings.selector,
+    			time: new Date()
+    		}
+
+    		var json = JSON.stringify(data);
+
+    		localStorage.setItem(key, json);
+
+    		return data;
 		}
 	},
 	readKey: function(key) {

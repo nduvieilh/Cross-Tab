@@ -48,12 +48,16 @@ $(document).on('ready', function() {
                     var string = '<tr id="'+key+'"><td>'+data.type+'</td><td>'+kind+'</td><td>'+data.value+'</td><td>'+data.responseTime+'</td>';
                     if(settings.checkOff)
                         string += '<td>'+checkOff+'</td>';
-                    string += '</div></tr>';
+                    string += '</tr>';
                     $('#results').prepend(string);
                     break;
                 case 'update':
+                    var string = '<td>'+data.type+'</td><td>'+kind+'</td><td>'+data.value+'</td><td>'+data.responseTime+'</td>';
+                    if(settings.checkOff)
+                        string += '<td>'+checkOff+'</td>';
+                    string += '';
                     if(settings.checkOff) {
-                        $('#'+key+' > td:last').html(checkOff);
+                        $('#'+key).html(string);
                     }
                     break;
                 case 'delete':
@@ -63,7 +67,6 @@ $(document).on('ready', function() {
                     console.log("Could not determine type: "+kind);
                     break;
             }
-            console.log(data);
         }
     };
 
