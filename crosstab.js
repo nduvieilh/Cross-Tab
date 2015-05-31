@@ -19,7 +19,7 @@
 		debug: false,
 		clear: true,
 		clearEvent: true,
-		checkOff: false,
+		checkOff: true,
 		uid: guid(),
 		prefix: 'crosstab',
 		storageCallback: function(data, kind, key, e) {
